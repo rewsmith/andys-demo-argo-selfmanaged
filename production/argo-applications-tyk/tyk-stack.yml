@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tyk-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://helm.tyk.io/public/helm/charts/'
+    targetRevision: 1.0.0
+    helm:
+      parameters:
+        - name: global.license.dashboard
+          value: >-
+            YOUR-LICENSE-GOES-HERE
+        - name: global.redis.passSecret.name
+          value: tyk-redispgsql-secrets
+        - name: global.redis.passSecret.keyName
+          value: redis-password
+        - name: global.redis.addrs
+          value: 'tyk-redis-master.tyk.svc:6379'
+        - name: global.postgres.connectionStringSecret.name
+          value: tyk-redispgsql-secrets
+        - name: global.postgres.connectionStringSecret.keyName
+          value: postgresURL
+        - name: global.secrets.APISecret
+          value: BananaSplit42
+        - name: global.components.bootstrap
+          value: 'true'
+        - name: tyk-bootstrap.bootstrap.dashboard
+          value: 'true'
+        - name: tyk-bootstrap.bootstrap.portal
+          value: 'false'
+        - name: tyk-gateway.gateway.opentelemetry.enabled
+          value: 'true'
+        - name: tyk-gateway.gateway.opentelemetry.endpoint
+          value: 'opentelemetry-collector.observability.svc:4317'
+        - name: tyk-gateway.gateway.opentelemetry.exporter
+          value: 'grpc'
+    chart: tyk-stack
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: tyk
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true

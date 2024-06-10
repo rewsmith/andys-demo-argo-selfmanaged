@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tyk-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://helm.tyk.io/public/helm/charts/'
+    targetRevision: 1.4.0
+    helm:
+      parameters:
+        - name: global.license.dashboard
+          value: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGxvd2VkX25vZGVzIjoiNTkxYjY1ZGMtMjI4MC00ODNmLTU3YjMtZGE4MzM2ZTBjZDY4LGM5YmY1ODA4LWI1YmYtNDM5ZS03YjllLTAyZTVlYmFkOGQ3OSxhMTBlNjIzOC01YzYxLTQxN2UtNzBjNy0wOWRjN2Q0NmMzMGQsMWVhZWYwNTMtYjhjOC00NGRiLTQzZWUtOWIxMTA0M2JiNWVlLGMzYzY0ZjRiLTQwOWEtNDA0ZS01NGYzLTI1YzZiYmExZjZmOCw4M2FmOTFiMy1mMzgzLTQxMDgtN2Q4MC04NjkxNjE2Mzc4OGQsZmFhM2Y4ZDEtNmI1ZC00Yjg2LTY5YjAtYmUzNDlhYTk1MWE4LGZmYzQ2MDA3LTA3MWYtNGFhNy01MmE3LWYwN2E3NmE0ZjQwZCxmNjYxMjc2Yy0zZjAzLTQzNjItNzg5OC1kNzE4N2FhY2I4ZWMsMjQzNGY2ODEtMjI1MS00ZmIwLTcwNGQtYjNkZDg0MWY5MDk3IiwiZXhwIjoxNzE5NTMyNzk5LCJpYXQiOjE3MTY4ODg2NTksIm93bmVyIjoiNjFjY2U2MmMxMjFjYTEwMDAxOGJiMTkwIiwic2NvcGUiOiJtdWx0aV90ZWFtLHJiYWMsZ3JhcGgsZmVkZXJhdGlvbiIsInYiOiIyIn0.H3WQPPs4wbzZKIJNtSoDhkZOi3XegA5wSeBQ6GPEAYPiBL8UGSwPMjGfohZmSfvQBI2JPvncL-43fSudi0sWMOl4l7R45kH5eabcZw_gpYv54PUiKTftU86y3y2S-QVKCzKDfVcy-_GMqBnCOzt7ggjajkn4LE7DXkvIJ2JIGPGUmcgsn_d5pYXkyrFtHEw_zF_S1oclqETZxlYGFsX5UJ2U5zGYGC6nKoSGzIhWiPAylE6bAeSlK92N52T07zWamfOOq1388ob3QG80DdYofofhjG7aGENsPFzjGimPL-2Iv2gBw_Hj8GSwnvLzONT7avH2_ZVJ2Pes3Njb1ylneA
+        - name: global.redis.passSecret.name
+          value: tyk-redispgsql-secrets
+        - name: global.redis.passSecret.keyName
+          value: redis-password
+        - name: global.redis.addrs
+          value: 'tyk-redis-master.tyk.svc:6379'
+        - name: global.postgres.connectionStringSecret.name
+          value: tyk-redispgsql-secrets
+        - name: global.postgres.connectionStringSecret.keyName
+          value: postgresURL
+        - name: global.secrets.APISecret
+          value: BananaSplit42
+        - name: global.components.bootstrap
+          value: 'true'
+        - name: tyk-bootstrap.bootstrap.dashboard
+          value: 'true'
+        - name: tyk-bootstrap.bootstrap.portal
+          value: 'false'
+        - name: tyk-gateway.gateway.opentelemetry.enabled
+          value: 'true'
+        - name: tyk-gateway.gateway.opentelemetry.endpoint
+          value: 'opentelemetry-collector.observability.svc:4317'
+        - name: tyk-gateway.gateway.opentelemetry.exporter
+          value: 'grpc'
+    chart: tyk-stack
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: tyk
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true
